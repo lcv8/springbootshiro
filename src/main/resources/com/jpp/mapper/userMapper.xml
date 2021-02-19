@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jpp.dao.UserDao">
+
+    <resultMap id="usermap" type="User">
+        <id column="id" property="id"/>
+        <result column="username" property="username"/>
+        <collection property="roles" javaType="list" ofType="Role">
+            <id column="id" property="id"/>
+            <result column="name" property="name"/>
+        </collection>
+    </resultMap>
+    <resultMap id="rolemap" type="Role">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <collection property="perss" javaType="list" ofType="Pers">
+            <id property="id" column="id"/>
+            <result property="name" column="name"/>
+            <result property="url" column="url"/>
+        </collection>
+    </resultMap>
+    <insert id="save" parameterType="User" useGeneratedKeys="true" keyProperty="id">
+        insert into `user` values(#{id},#{username},#{password},#{salt})
+    </insert>
+    <select id="findByUsername" parameterType="String" resultType="User">
+        select id,username,password,salt from `user` where username=#{username}
+    </select>
+
+    <select id="findRolesByUsername" parameterType="String" resultMap="usermap">
+        SELECT u.username,ur.userid,r.id,r.name
+        FROM `user` u
+        LEFT JOIN `user_role` ur
+               ON u.id = ur.userid
+        LEFT JOIN `role`r
+               ON u.id = r.id
+        WHERE username = #{username}
+    </select>
+
+    <select id="findPerByRoleId" parameterType="String" resultType="Pers">
+        SELECT p.id,p.name,p.url,r.name
+        FROM `role`r
+        LEFT JOIN role_pers rp
+               ON r.id = rp.roleid
+        LEFT JOIN `pers` p
+               ON rp.permsid = p.id
+        WHERE r.id=#{id}
+    </select>
+</mapper>
